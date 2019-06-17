@@ -25,7 +25,7 @@ set -e
 #   None                   #
 ############################
 main() {
-  VERSION="0.2.0-alpha.15"
+  VERSION="0.2.0-alpha.16"
 
   OPTIONS_TABLE=(
     # option_key;flag_text;option_text;description
@@ -44,7 +44,7 @@ main() {
     "insecure;-i;--insecure;Skip the host's SSL certificate verification, use at your own risk. Defaults to false"
     "verbose;-v;--verbose;Increase the verbosity of messages. Defaults to false"
     "debug;-d;--debug;Print as much information as possible to help diagnosing a malfunction. Defaults to false"
-    "masked-variables;-m;--masked-variables;In debug and/or verbose mode, the value of sensitive variables will be hidden, useful to avoid leaking passwords or tokens in your logs. Possible values: true|extended|false. Defaults to true"
+    "masked-variables;-m;--masked-variables;In debug and/or verbose mode, the value of sensitive variables will be hidden, useful to avoid leaking passwords or tokens in your logs. Possible values: true|extended|false. Defaults to false"
     "quiet;-q;--quiet;Display the minimum of information or nothing, UNIX/Linux friendly. Defaults to false"
     "strict;-t;--strict;Never updates an existent stack nor removes an inexistent one, and instead exits with an error. Defaults to false"
     "help;-h;--help;Display help message. To display help of a given action, run: 'psu <action> --help'"
@@ -386,7 +386,7 @@ set_globals() {
   DEBUG_MODE=${DEBUG_MODE:-"false"}
   QUIET_MODE=${QUIET_MODE:-"false"}
   STRICT_MODE=${STRICT_MODE:-"false"}
-  MASKED_VARIABLES=${MASKED_VARIABLES:-"true"}
+  MASKED_VARIABLES=${MASKED_VARIABLES:-"false"}
 
   # Set arguments through argument and options (overwrite envvars)
   inputs "$@"
@@ -868,9 +868,14 @@ echo_debug() {
 mask_variables() {
   local message="$1"
 
-  if [ "$MASKED_VARIABLES" == "true" ]; then
-    # Mask PORTAINER_PASSWORD variable value
-    message=$(echo "$message" | sed "s/$PORTAINER_PASSWORD/[MASKED]/g")
+  if [ "$MASKED_VARIABLES" == "true" ] && [ -n "$PORTAINER_PASSWORD" ]; then
+    # Mask PORTAINER_PASSWORD and AUTH_TOKEN variable values
+    local auth_token_masked
+    auth_token_masked="$AUTH_TOKEN"
+    if [ -z "$auth_token_masked" ]; then
+      auth_token_masked="$PORTAINER_PASSWORD"
+    fi
+    message=$(echo "$message" | sed "s/\($PORTAINER_PASSWORD\|$auth_token_masked\)/[MASKED]/g")
   elif [ "$MASKED_VARIABLES" == "extended" ]; then
     # Mask all variable values with PASSWORD or TOKEN in their name
     local masked_vars
