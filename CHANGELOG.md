@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `core` Docker image variant doesn't include `docker-compose`, so it's a bit smaller. But you can't lint Docker compose/stack file before deploying a stack
 - The `debian` and `debian-core` Docker image variants, use [Debian](https://www.debian.org) instead of [Alpine](https://alpinelinux.org/) as base image for `psu`
 - Online documentation via [docsify](https://docsify.js.org)
-- Tests
+- Tests who run automatically on each git push via [GitLab CI](https://docs.gitlab.com/ce/ci/)
 
 ### Changed
 - The `undeploy` action is now an aliased action. You should use `rm` action instead
